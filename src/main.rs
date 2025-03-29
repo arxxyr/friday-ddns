@@ -1,16 +1,16 @@
 extern crate clap;
 extern crate minreq;
 extern crate quick_xml;
-extern crate url;
 extern crate serde_yaml;
+extern crate url;
 
 use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use quick_xml::de::from_str;
 use serde::Deserialize;
-use url::Url;
 use std::fs;
 use std::path::PathBuf;
+use url::Url;
 
 const API_URL: &str = "https://dynamicdns.park-your-domain.com/update";
 
@@ -101,9 +101,9 @@ fn main() -> Result<()> {
     // 读取YAML配置文件
     let config_content = fs::read_to_string(&cli.config)
         .with_context(|| format!("无法读取配置文件 {:?}", cli.config))?;
-    
-    let config: Config = serde_yaml::from_str(&config_content)
-        .with_context(|| "解析YAML配置文件失败")?;
+
+    let config: Config =
+        serde_yaml::from_str(&config_content).with_context(|| "解析YAML配置文件失败")?;
 
     // 处理每个域名配置
     for domain_config in config.domains {
