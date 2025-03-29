@@ -28,17 +28,11 @@ jobs:
 
       - name: 设置Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          config-inline: |
-            [registry."docker.io"]
-              mirrors = ["ghcr.io"]
-          buildkitd-flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
 
-      # 启用Docker CLI实验特性
       - name: 启用Docker CLI实验特性
         run: |
-          mkdir -p $HOME/.docker
-          echo '{"experimental": "enabled"}' > $HOME/.docker/config.json
+          echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json
+          sudo service docker restart
 
       - name: 登录GitHub容器注册表
         if: github.event_name != 'pull_request'
@@ -62,7 +56,7 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
 
       # 构建并推送AMD64版本
-      - name: 构建并推送AMD64
+      - name: 构建并推送AMD64版本
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -75,7 +69,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       # 构建并推送ARM64版本
-      - name: 构建并推送ARM64
+      - name: 构建并推送ARM64版本
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -87,22 +81,22 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 创建并推送多架构清单 - 简化为只推送到GitHub
+      # 创建并推送多架构清单
       - name: 创建并推送多架构清单
         if: github.event_name != 'pull_request'
         run: |
-          # 将标签处理为数组
-          readarray -t TAGS < <(echo "${{ steps.meta.outputs.tags }}")
+          # 保存标签到文件中
+          echo '${{ steps.meta.outputs.tags }}' > /tmp/tags.txt
           
-          # 处理每个标签
-          for tag in "${TAGS[@]}"; do
+          # 遍历每个标签
+          cat /tmp/tags.txt | while read tag; do
             # 跳过空行
             [ -z "$tag" ] && continue
             
-            echo "为标签 $tag 创建多架构清单"
-            
+            echo "创建多架构清单: $tag"
             docker manifest create "$tag" \
               "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64" \
               "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64"
             
+            echo "推送多架构清单: $tag"
             docker manifest push "$tag" 
