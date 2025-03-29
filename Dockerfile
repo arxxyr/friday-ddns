@@ -1,7 +1,11 @@
-FROM rustlang/rust:nightly as builder
+FROM rust:alpine as builder
 
 # 安装构建依赖
-RUN apk add --no-cache musl-dev pkgconfig openssl-dev
+RUN apk add --no-cache musl-dev pkgconfig openssl-dev build-base
+
+# 安装并配置nightly工具链
+RUN rustup default nightly && \
+    rustup target add x86_64-unknown-linux-musl
 
 # 设置使用musl-libc
 ENV RUSTFLAGS='-C link-arg=-s'
