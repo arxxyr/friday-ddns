@@ -1,0 +1,38 @@
+FROM rustlang/rust:nightly AS builder
+
+# 安装构建依赖
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/src
+COPY . .
+
+# 正常编译，不使用musl，确保使用glibc
+RUN cargo build --release
+
+# 使用Ubuntu作为运行时镜像
+FROM ubuntu:22.04
+
+# 安装运行时依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+# 复制编译的二进制文件
+COPY --from=builder /usr/src/target/release/friday-ddns /usr/local/bin/friday-ddns
+
+# 创建配置目录
+RUN mkdir -p /etc/friday-ddns
+
+# 设置入口点
+ENTRYPOINT ["friday-ddns", "-c", "/etc/friday-ddns/config.yaml"]
+
+# 提供一个默认命令
+CMD ["--help"] 

@@ -2,15 +2,17 @@ version: '3'
 
 services:
   friday-ddns:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-yourusername}/friday-ddns:latest
+    image: ghcr.io/arxxyr/friday-ddns:amd64
     container_name: friday-ddns
     restart: unless-stopped
     network_mode: "host"  # 使用host网络模式
+    environment:
+      - RUST_BACKTRACE=full
     volumes:
-      - ./config.yaml:/etc/friday-ddns/config.yaml:ro
+      - /mnt/config/ddns/config.yaml:/etc/friday-ddns/config.yaml:ro
     # 使用更健壮的方式运行定时任务
-    entrypoint: 
-      - "sh"
+    command: 
+      - "bash"
       - "-c"
       - |
         echo "首次运行DDNS更新..."

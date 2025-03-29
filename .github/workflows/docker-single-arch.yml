@@ -50,12 +50,12 @@ jobs:
             type=sha
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
 
-      # 构建并推送AMD64版本
+      # 构建并推送AMD64版本 (基于Ubuntu)
       - name: 构建并推送AMD64版本
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.amd64
+          file: ./Dockerfile.ubuntu-amd64
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
@@ -63,12 +63,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 构建并推送ARM64版本
+      # 构建并推送ARM64版本 (基于Ubuntu)
       - name: 构建并推送ARM64版本
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.arm64
+          file: ./Dockerfile.ubuntu-arm64
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/arm64
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
