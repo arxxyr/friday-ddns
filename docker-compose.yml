@@ -5,6 +5,7 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-yourusername}/friday-ddns:latest
     container_name: friday-ddns
     restart: unless-stopped
+    network_mode: "host"  # 使用host网络模式
     volumes:
       - ./config.yaml:/etc/friday-ddns/config.yaml:ro
     # 使用更健壮的方式运行定时任务

@@ -1,26 +1,25 @@
 FROM rustlang/rust:nightly as builder
 
 # 安装构建依赖
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    pkg-config \
-    libssl-dev \
-    build-essential \
-    gcc \
-    libc6-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache musl-dev pkgconfig openssl-dev
+
+# 设置使用musl-libc
+ENV RUSTFLAGS='-C link-arg=-s'
 
 WORKDIR /app
 COPY . .
 
-# 提供详细输出便于调试
-RUN cargo build --release --verbose || (cat /app/target/release/build/*/*/output 2>/dev/null || true && false)
+# 静态编译
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
-FROM debian:bullseye-slim
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+FROM alpine:3.18
+
+# 安装必要的CA证书
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
-COPY --from=builder /app/target/release/friday-ddns /usr/local/bin/friday-ddns
+# 复制静态编译的二进制文件
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
 
 # 创建配置目录
 RUN mkdir -p /etc/friday-ddns
