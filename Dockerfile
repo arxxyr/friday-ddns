@@ -1,14 +1,20 @@
-FROM rust:alpine as builder
+FROM rustlang/rust:nightly as builder
 
-# 安装构建依赖
-RUN apk add --no-cache musl-dev pkgconfig openssl-dev build-base
+# 安装musl工具链和其他依赖
+RUN apt-get update && \
+    apt-get install -y \
+    musl-tools \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# 安装并配置nightly工具链
-RUN rustup default nightly && \
-    rustup target add x86_64-unknown-linux-musl
+# 添加musl目标
+RUN rustup target add x86_64-unknown-linux-musl
 
-# 设置使用musl-libc
-ENV RUSTFLAGS='-C link-arg=-s'
+# 设置环境变量
+ENV PKG_CONFIG_ALLOW_CROSS=1
+ENV OPENSSL_STATIC=true
+ENV OPENSSL_DIR=/usr/include/openssl
 
 WORKDIR /app
 COPY . .
