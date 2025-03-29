@@ -1,73 +1,74 @@
 # Namecheap DDNS
 
-[![Latest Version](https://img.shields.io/crates/v/namecheap-ddns.svg)](https://crates.io/crates/namecheap-ddns)
-[![Downloads](https://img.shields.io/github/downloads/nickjer/namecheap-ddns/total.svg)](https://github.com/nickjer/namecheap-ddns/releases)
-[![License](https://img.shields.io/github/license/nickjer/namecheap-ddns.svg)](https://github.com/nickjer/namecheap-ddns)
-[![Continuous Integration Status](https://github.com/nickjer/namecheap-ddns/workflows/Continuous%20integration/badge.svg)](https://github.com/nickjer/namecheap-ddns/actions)
+> 声明：本项目是从[nickjer/namecheap-ddns](https://github.com/nickjer/namecheap-ddns) fork而来。
 
-A command line interface (CLI) used to update the A + Dynamic DNS records for
-Namecheap.
+[![最新版本](https://img.shields.io/crates/v/namecheap-ddns.svg)](https://crates.io/crates/namecheap-ddns)
+[![下载量](https://img.shields.io/github/downloads/nickjer/namecheap-ddns/total.svg)](https://github.com/nickjer/namecheap-ddns/releases)
+[![许可证](https://img.shields.io/github/license/nickjer/namecheap-ddns.svg)](https://github.com/nickjer/namecheap-ddns)
+[![持续集成状态](https://github.com/nickjer/namecheap-ddns/workflows/Continuous%20integration/badge.svg)](https://github.com/nickjer/namecheap-ddns/actions)
 
-## Pre-compiled Binaries
+[English Version](README_EN.md)
 
-You can download and run the [pre-compiled binaries] to get up and running
-immediately.
+这是一个命令行工具（CLI），用于更新Namecheap的A记录和动态DNS记录。
 
-## Installation
+## 预编译二进制文件
 
-An alternative is to install using [cargo]:
+你可以下载并运行[预编译的二进制文件]来立即开始使用。
+
+## 安装
+
+另一种方法是使用[cargo]进行安装：
 
 ```shell
 cargo install namecheap-ddns
 ```
 
-## Usage
+## 使用方法
 
-Check the help (`--help`) for details on using this tool:
+查看帮助（`--help`）了解此工具的详细使用方法：
 
 ```shell
-Updates the A + Dynamic DNS records for Namecheap
+更新Namecheap的A记录和动态DNS记录
 
-Usage: namecheap-ddns [OPTIONS] --config <CONFIG>
+用法: namecheap-ddns [选项] --config <配置文件>
 
-Options:
-  -c, --config <CONFIG>        Path to the YAML configuration file [env: NAMECHEAP_DDNS_CONFIG=]
-  -h, --help                   Print help
-  -V, --version                Print version
+选项:
+  -c, --config <配置文件>        YAML配置文件的路径 [环境变量: NAMECHEAP_DDNS_CONFIG=]
+  -h, --help                   打印帮助信息
+  -V, --version                打印版本信息
 ```
 
-### YAML Configuration File
+### YAML配置文件
 
-The program now uses a YAML configuration file to support multiple domains and passwords. Here's an example configuration (`config.yaml`):
+程序现在使用YAML配置文件来支持多个域名和密码。以下是一个配置示例（`config.yaml`）：
 
 ```yaml
 domains:
-  # First domain configuration
+  # 第一个域名配置
   - domain: example.com
-    token: abcdef123456  # Namecheap Dynamic DNS Password
+    token: abcdef123456  # Namecheap动态DNS密码
     subdomains:
-      - "@"  # Root domain
+      - "@"  # 根域名
       - "www"
       - "test"
-    # ip: 198.51.100.1  # Optional, if not provided uses the IP of the request
+    # ip: 198.51.100.1  # 可选，如果不提供则使用请求的IP地址
 
-  # Second domain configuration
+  # 第二个域名配置
   - domain: another-example.com
     token: xyz789abc
     subdomains:
       - "home"
       - "cloud"
-    # ip: 203.0.113.10  # Optional
+    # ip: 203.0.113.10  # 可选
 ```
 
-You will need to specify Namecheap's Dynamic DNS Password provided to you in
-their Advanced DNS control panel as the `token` in your configuration file.
+你需要在配置文件的`token`字段中指定Namecheap在高级DNS控制面板中提供给你的动态DNS密码。
 
-> *Tip:* This is not your Namecheap login password.
+> *提示：* 这不是你的Namecheap登录密码。
 
-### Examples
+### 示例
 
-Update all domains and subdomains defined in your configuration file:
+更新配置文件中定义的所有域名和子域名：
 
 ```console
 $ namecheap-ddns -c config.yaml
@@ -77,7 +78,7 @@ home.another-example.com IP地址已更新为: 123.123.123.123
 cloud.another-example.com IP地址已更新为: 123.123.123.123
 ```
 
-You can also use an environment variable to specify the configuration file:
+你也可以使用环境变量来指定配置文件：
 
 ```console
 $ export NAMECHEAP_DDNS_CONFIG=/path/to/config.yaml
@@ -230,4 +231,4 @@ docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml namecheap-ddns
    - 支持多架构(amd64/arm64)镜像
 
 [cargo]: https://doc.rust-lang.org/cargo/
-[pre-compiled binaries]: https://github.com/nickjer/namecheap-ddns/releases
+[预编译的二进制文件]: https://github.com/nickjer/namecheap-ddns/releases
