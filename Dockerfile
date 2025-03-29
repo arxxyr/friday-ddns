@@ -1,4 +1,4 @@
-FROM rust:1.76-slim as builder
+FROM rustlang/rust:nightly as builder
 
 # 安装构建依赖
 RUN apt-get update && \
