@@ -1,0 +1,50 @@
+FROM rustlang/rust:nightly-slim AS builder
+
+# 安装交叉编译工具
+RUN dpkg --add-architecture arm64 && \
+    apt-get update && \
+    apt-get install -y \
+      gcc-aarch64-linux-gnu \
+      libc6-dev-arm64-cross \
+      musl-tools \
+      pkg-config \
+      libssl-dev \
+      build-essential \
+      git && \
+    rm -rf /var/lib/apt/lists/*
+
+# 更新到最新的nightly版本并添加ARM64 musl目标
+RUN rustup update nightly && \
+    rustup default nightly && \
+    rustup target add aarch64-unknown-linux-musl
+
+# 配置交叉编译环境
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-gnu-gcc \
+    CC_aarch64_unknown_linux_musl=aarch64-linux-gnu-gcc \
+    RUSTFLAGS="-C target-feature=+crt-static" \
+    PKG_CONFIG_ALLOW_CROSS=1 \
+    OPENSSL_STATIC=true
+
+WORKDIR /usr/src
+COPY . .
+
+# 构建项目
+RUN cargo build --release --target aarch64-unknown-linux-musl
+
+FROM arm64v8/alpine:3.18
+
+# 安装必要的CA证书
+RUN apk add --no-cache ca-certificates
+
+WORKDIR /app
+# 复制静态编译的二进制文件
+COPY --from=builder /usr/src/target/aarch64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
+
+# 创建配置目录
+RUN mkdir -p /etc/friday-ddns
+
+# 设置入口点
+ENTRYPOINT ["friday-ddns", "-c", "/etc/friday-ddns/config.yaml"]
+
+# 提供一个默认命令，但用户可以覆盖
+CMD ["--help"] 
