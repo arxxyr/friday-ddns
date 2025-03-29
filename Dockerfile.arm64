@@ -1,4 +1,4 @@
-FROM rustlang/rust:nightly-slim AS builder
+FROM rustlang/rust:nightly AS builder
 
 # 安装交叉编译工具
 RUN dpkg --add-architecture arm64 && \
@@ -13,10 +13,8 @@ RUN dpkg --add-architecture arm64 && \
       git && \
     rm -rf /var/lib/apt/lists/*
 
-# 更新到最新的nightly版本并添加ARM64 musl目标
-RUN rustup update nightly && \
-    rustup default nightly && \
-    rustup target add aarch64-unknown-linux-musl
+# 添加ARM64 musl目标，但不尝试更新nightly
+RUN rustup target add aarch64-unknown-linux-musl
 
 # 配置交叉编译环境
 ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-gnu-gcc \
