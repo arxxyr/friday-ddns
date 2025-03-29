@@ -60,7 +60,7 @@ jobs:
           file: ./${{ env.AMD64_DOCKERFILE }}
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64-single
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -127,7 +127,7 @@ jobs:
           file: ./${{ env.ARM64_DOCKERFILE }}
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/arm64
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64-single
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -171,9 +171,17 @@ jobs:
             echo "创建多架构清单: $tag"
             
             docker manifest create "$tag" \
-              "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64" \
-              "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64"
+              "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64-single" \
+              "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64-single"
             
             echo "推送多架构清单: $tag"
             docker manifest push "$tag"
-          done 
+          done
+          
+          # 创建标准架构标签
+          echo "创建架构特定标签"
+          docker manifest create "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64" "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64-single"
+          docker manifest push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64"
+          
+          docker manifest create "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64" "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64-single"
+          docker manifest push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64" 
