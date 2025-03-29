@@ -18,7 +18,7 @@ const IP_DETECT_URL: &str = "https://dynamicdns.park-your-domain.com/getip";
 const BACKUP_IP_SERVICES: [&str; 3] = [
     "https://api.ipify.org",
     "https://ifconfig.me/ip",
-    "https://icanhazip.com"
+    "https://icanhazip.com",
 ];
 
 #[derive(Debug, Deserialize)]
@@ -76,13 +76,13 @@ fn get_ip_from_namecheap() -> Result<String> {
         .with_timeout(10)
         .send()
         .with_context(|| format!("无法连接到Namecheap IP检测服务 {IP_DETECT_URL}"))?;
-    
+
     let ip = response.as_str()?.trim().to_string();
-    
+
     if ip.is_empty() {
         return Err(anyhow!("IP检测服务返回了空IP"));
     }
-    
+
     Ok(ip)
 }
 
@@ -98,10 +98,10 @@ fn get_ip_from_backup_services() -> Result<String> {
                     }
                 }
             }
-            Err(_) => continue
+            Err(_) => continue,
         }
     }
-    
+
     Err(anyhow!("所有备用IP检测服务均失败"))
 }
 
@@ -112,7 +112,7 @@ fn get_current_ip() -> Result<String> {
         Ok(ip) => {
             println!("从Namecheap获取到IP: {}", ip);
             Ok(ip)
-        },
+        }
         Err(e) => {
             println!("Namecheap IP服务失败: {}，尝试备用服务...", e);
             // 尝试备用服务
@@ -120,8 +120,8 @@ fn get_current_ip() -> Result<String> {
                 Ok(ip) => {
                     println!("从备用服务获取到IP: {}", ip);
                     Ok(ip)
-                },
-                Err(e) => Err(anyhow!("所有IP检测服务都失败: {}", e))
+                }
+                Err(e) => Err(anyhow!("所有IP检测服务都失败: {}", e)),
             }
         }
     }
@@ -133,7 +133,7 @@ fn update(domain: &str, subdomain: &str, token: &str, ip: Option<&str>) -> Resul
         .append_pair("domain", domain)
         .append_pair("host", subdomain)
         .append_pair("password", token);
-    
+
     // 如果未提供IP，从IP检测服务获取当前IP
     let ip_value = match ip {
         Some(ip) => ip.to_string(),
@@ -142,7 +142,7 @@ fn update(domain: &str, subdomain: &str, token: &str, ip: Option<&str>) -> Resul
             get_current_ip()?
         }
     };
-    
+
     // 现在总是添加IP参数
     url.query_pairs_mut().append_pair("ip", &ip_value);
 
