@@ -1,4 +1,4 @@
-FROM clux/muslrust:nightly AS builder
+FROM messense/rust-musl-cross:aarch64-musl AS builder
 
 WORKDIR /usr/src
 COPY . .
@@ -9,7 +9,8 @@ FROM alpine:3.18
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=builder /usr/src/target/x86_64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
+WORKDIR /app
+COPY --from=builder /usr/src/target/aarch64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
 
 RUN mkdir -p /etc/friday-ddns
 

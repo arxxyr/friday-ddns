@@ -28,6 +28,17 @@ jobs:
 
       - name: 设置Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          config-inline: |
+            [registry."docker.io"]
+              mirrors = ["ghcr.io"]
+          buildkitd-flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
+
+      # 启用Docker CLI实验特性
+      - name: 启用Docker CLI实验特性
+        run: |
+          mkdir -p $HOME/.docker
+          echo '{"experimental": "enabled"}' > $HOME/.docker/config.json
 
       - name: 登录GitHub容器注册表
         if: github.event_name != 'pull_request'
@@ -50,15 +61,106 @@ jobs:
             type=sha
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
 
-      - name: 构建并推送
+      # 创建多架构Dockerfile
+      - name: 创建AMD64 Dockerfile
+        run: |
+          cat > Dockerfile.amd64 << 'EOF'
+          FROM messense/rust-musl-cross:x86_64-musl AS builder
+          
+          WORKDIR /usr/src
+          COPY . .
+          
+          # 构建项目
+          RUN cargo build --release
+          
+          FROM alpine:3.18
+          
+          # 安装必要的CA证书
+          RUN apk add --no-cache ca-certificates
+          
+          WORKDIR /app
+          # 复制静态编译的二进制文件
+          COPY --from=builder /usr/src/target/x86_64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
+          
+          # 创建配置目录
+          RUN mkdir -p /etc/friday-ddns
+          
+          # 设置入口点
+          ENTRYPOINT ["friday-ddns", "-c", "/etc/friday-ddns/config.yaml"]
+          
+          # 提供一个默认命令，但用户可以覆盖
+          CMD ["--help"]
+          EOF
+
+      - name: 创建ARM64 Dockerfile
+        run: |
+          cat > Dockerfile.arm64 << 'EOF'
+          FROM messense/rust-musl-cross:aarch64-musl AS builder
+          
+          WORKDIR /usr/src
+          COPY . .
+          
+          # 构建项目
+          RUN cargo build --release
+          
+          FROM arm64v8/alpine:3.18
+          
+          # 安装必要的CA证书
+          RUN apk add --no-cache ca-certificates
+          
+          WORKDIR /app
+          # 复制静态编译的二进制文件
+          COPY --from=builder /usr/src/target/aarch64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
+          
+          # 创建配置目录
+          RUN mkdir -p /etc/friday-ddns
+          
+          # 设置入口点
+          ENTRYPOINT ["friday-ddns", "-c", "/etc/friday-ddns/config.yaml"]
+          
+          # 提供一个默认命令，但用户可以覆盖
+          CMD ["--help"]
+          EOF
+
+      # 构建并推送AMD64版本
+      - name: 构建并推送AMD64
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile.amd64
           push: ${{ github.event_name != 'pull_request' }}
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: linux/amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            USE_MUSL=true 
+
+      # 构建并推送ARM64版本
+      - name: 构建并推送ARM64
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/arm64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 创建并推送多架构清单
+      - name: 创建并推送多架构清单
+        if: github.event_name != 'pull_request'
+        run: |
+          # 重新登录以确保有权限推送清单
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # 为每个标签创建多架构清单
+          for tag in $(echo "${{ steps.meta.outputs.tags }}" | tr '\n' ' '); do
+            echo "为标签 $tag 创建多架构清单"
+            
+            docker manifest create $tag \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+            
+            docker manifest push $tag 
