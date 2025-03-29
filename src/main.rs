@@ -13,6 +13,7 @@ use std::path::PathBuf;
 use url::Url;
 
 const API_URL: &str = "https://dynamicdns.park-your-domain.com/update";
+const IP_DETECT_URL: &str = "https://dynamicdns.park-your-domain.com/getip";
 
 #[derive(Debug, Deserialize)]
 struct ErrorList {
@@ -63,15 +64,40 @@ struct Cli {
     config: PathBuf,
 }
 
+// 从Namecheap的服务获取当前公网IP
+fn get_current_ip() -> Result<String> {
+    let response = minreq::get(IP_DETECT_URL)
+        .with_timeout(10)
+        .send()
+        .with_context(|| format!("无法连接到Namecheap IP检测服务 {IP_DETECT_URL}"))?;
+    
+    let ip = response.as_str()?.trim().to_string();
+    
+    if ip.is_empty() {
+        return Err(anyhow!("IP检测服务返回了空IP"));
+    }
+    
+    Ok(ip)
+}
+
 fn update(domain: &str, subdomain: &str, token: &str, ip: Option<&str>) -> Result<()> {
     let mut url = Url::parse(API_URL)?;
     url.query_pairs_mut()
         .append_pair("domain", domain)
         .append_pair("host", subdomain)
         .append_pair("password", token);
-    if let Some(ip) = ip {
-        url.query_pairs_mut().append_pair("ip", ip);
-    }
+    
+    // 如果未提供IP，从Namecheap服务获取当前IP
+    let ip_value = match ip {
+        Some(ip) => ip.to_string(),
+        None => {
+            println!("未指定IP地址，从Namecheap IP检测服务获取...");
+            get_current_ip()?
+        }
+    };
+    
+    // 现在总是添加IP参数
+    url.query_pairs_mut().append_pair("ip", &ip_value);
 
     let response = minreq::get(url.as_str())
         .with_timeout(10)
