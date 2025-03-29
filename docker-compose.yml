@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  namecheap-ddns:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-yourusername}/namecheap-ddns:latest
-    container_name: namecheap-ddns
+  friday-ddns:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-yourusername}/friday-ddns:latest
+    container_name: friday-ddns
     restart: unless-stopped
     volumes:
       - ./config.yaml:/etc/friday-ddns/config.yaml:ro
@@ -13,10 +13,10 @@ services:
       - "-c"
       - |
         echo "首次运行DDNS更新..."
-        namecheap-ddns -c /etc/friday-ddns/config.yaml
+        friday-ddns -c /etc/friday-ddns/config.yaml
         echo "设置定时任务，每15分钟运行一次..."
         while true; do
           sleep 900
           echo "运行定时DDNS更新..."
-          namecheap-ddns -c /etc/friday-ddns/config.yaml || echo "更新失败，将在下次尝试"
+          friday-ddns -c /etc/friday-ddns/config.yaml || echo "更新失败，将在下次尝试"
         done 

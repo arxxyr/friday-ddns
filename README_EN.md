@@ -1,11 +1,11 @@
-# Namecheap DDNS
+# Friday DDNS
 
 > Disclaimer: This project is forked from [nickjer/namecheap-ddns](https://github.com/nickjer/namecheap-ddns).
 
-[![Latest Version](https://img.shields.io/crates/v/namecheap-ddns.svg)](https://crates.io/crates/namecheap-ddns)
-[![Downloads](https://img.shields.io/github/downloads/nickjer/namecheap-ddns/total.svg)](https://github.com/nickjer/namecheap-ddns/releases)
-[![License](https://img.shields.io/github/license/nickjer/namecheap-ddns.svg)](https://github.com/nickjer/namecheap-ddns)
-[![Continuous Integration Status](https://github.com/nickjer/namecheap-ddns/workflows/Continuous%20integration/badge.svg)](https://github.com/nickjer/namecheap-ddns/actions)
+[![Latest Version](https://img.shields.io/crates/v/friday-ddns.svg)](https://crates.io/crates/friday-ddns)
+[![Downloads](https://img.shields.io/github/downloads/arxxyr/friday-ddns/total.svg)](https://github.com/arxxyr/friday-ddns/releases)
+[![License](https://img.shields.io/github/license/arxxyr/friday-ddns.svg)](https://github.com/arxxyr/friday-ddns)
+[![Continuous Integration Status](https://github.com/arxxyr/friday-ddns/workflows/Continuous%20integration/badge.svg)](https://github.com/arxxyr/friday-ddns/actions)
 
 A command line interface (CLI) used to update the A + Dynamic DNS records for
 Namecheap.
@@ -20,7 +20,7 @@ immediately.
 An alternative is to install using [cargo]:
 
 ```shell
-cargo install namecheap-ddns
+cargo install friday-ddns
 ```
 
 ## Usage
@@ -30,7 +30,7 @@ Check the help (`--help`) for details on using this tool:
 ```shell
 Updates the A + Dynamic DNS records for Namecheap
 
-Usage: namecheap-ddns [OPTIONS] --config <CONFIG>
+Usage: friday-ddns [OPTIONS] --config <CONFIG>
 
 Options:
   -c, --config <CONFIG>        Path to the YAML configuration file [env: NAMECHEAP_DDNS_CONFIG=]
@@ -72,7 +72,7 @@ their Advanced DNS control panel as the `token` in your configuration file.
 Update all domains and subdomains defined in your configuration file:
 
 ```console
-$ namecheap-ddns -c config.yaml
+$ friday-ddns -c config.yaml
 www.example.com IP address updated to: 123.123.123.123
 test.example.com IP address updated to: 123.123.123.123
 home.another-example.com IP address updated to: 123.123.123.123
@@ -83,7 +83,7 @@ You can also use an environment variable to specify the configuration file:
 
 ```console
 $ export NAMECHEAP_DDNS_CONFIG=/path/to/config.yaml
-$ namecheap-ddns
+$ friday-ddns
 ```
 
 ## Linux - systemd
@@ -101,7 +101,7 @@ If you want to set this up as a service, you need to create a service file and a
 
    [Service]
    Type=simple
-   ExecStart=/path/to/namecheap-ddns -c /path/to/config.yaml
+   ExecStart=/path/to/friday-ddns -c /path/to/config.yaml
    User=<USER>
 
    [Install]
@@ -173,7 +173,7 @@ The installation script will automatically:
 
 ```bash
 # Replace your-username with your GitHub username
-docker pull ghcr.io/your-username/namecheap-ddns:latest
+docker pull ghcr.io/your-username/friday-ddns:latest
 ```
 
 ### Run with Docker
@@ -194,7 +194,7 @@ domains:
 ```bash
 # Replace your-username with your GitHub username
 docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml \
-  ghcr.io/your-username/namecheap-ddns:latest
+  ghcr.io/your-username/friday-ddns:latest
 ```
 
 ### Run with Docker Compose
@@ -211,14 +211,14 @@ docker-compose up -d
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/namecheap-ddns.git
-cd namecheap-ddns
+git clone https://github.com/yourusername/friday-ddns.git
+cd friday-ddns
 
 # Build the image
-docker build -t namecheap-ddns .
+docker build -t friday-ddns .
 
 # Run the container
-docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml namecheap-ddns
+docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml friday-ddns
 ```
 
 ## Continuous Integration and Automated Builds
@@ -232,4 +232,4 @@ This project uses GitHub Actions for continuous integration and automated builds
    - Supports multi-architecture (amd64/arm64) images
 
 [cargo]: https://doc.rust-lang.org/cargo/
-[pre-compiled binaries]: https://github.com/nickjer/namecheap-ddns/releases 
+[pre-compiled binaries]: https://github.com/arxxyr/friday-ddns/releases 

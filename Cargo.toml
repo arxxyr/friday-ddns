@@ -1,13 +1,13 @@
 [package]
-name = "namecheap-ddns"
+name = "friday-ddns"
 description = "Updates the A + Dynamic DNS records for Namecheap"
-version = "0.3.4"
-authors = ["Jeremy Nicklas <jeremywnicklas@gmail.com>"]
+version = "0.1.0"
+authors = ["arxxyr <loosqk@gmail.com>"]
 edition = "2024"
 license = "MIT"
 keywords = ["namecheap", "ddns"]
-homepage = "https://github.com/nickjer/namecheap-ddns"
-repository = "https://github.com/nickjer/namecheap-ddns"
+homepage = "https://github.com/arxxyr/friday-ddns"
+repository = "https://github.com/arxxyr/friday-ddns"
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

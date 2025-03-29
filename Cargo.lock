@@ -146,6 +146,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "friday-ddns"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "minreq",
+ "quick-xml",
+ "serde",
+ "serde_yaml",
+ "url",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -364,19 +377,6 @@ dependencies = [
  "rustls",
  "rustls-webpki",
  "webpki-roots",
-]
-
-[[package]]
-name = "namecheap-ddns"
-version = "0.3.4"
-dependencies = [
- "anyhow",
- "clap",
- "minreq",
- "quick-xml",
- "serde",
- "serde_yaml",
- "url",
 ]
 
 [[package]]

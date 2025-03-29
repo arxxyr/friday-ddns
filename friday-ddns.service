@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/namecheap-ddns -c /etc/friday-ddns/config.yaml
+ExecStart=/usr/local/bin/friday-ddns -c /etc/friday-ddns/config.yaml
 User=nobody
 Group=nogroup
 

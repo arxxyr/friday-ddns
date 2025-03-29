@@ -51,9 +51,9 @@ jobs:
           command: fmt
           args: --all -- --check
       - name: Rename binary
-        run: mv target/${{ matrix.target }}/debug/namecheap-ddns namecheap-ddns-${{ github.sha }}-${{ matrix.target }}
+        run: mv target/${{ matrix.target }}/debug/friday-ddns friday-ddns-${{ github.sha }}-${{ matrix.target }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: namecheap-ddns-${{ matrix.target }}
-          path: namecheap-ddns-${{ github.sha }}-${{ matrix.target }}
+          name: friday-ddns-${{ matrix.target }}
+          path: friday-ddns-${{ github.sha }}-${{ matrix.target }}

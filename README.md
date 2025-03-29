@@ -1,11 +1,11 @@
-# Namecheap DDNS
+# Friday DDNS
 
 > 声明：本项目是从[nickjer/namecheap-ddns](https://github.com/nickjer/namecheap-ddns) fork而来。
 
-[![最新版本](https://img.shields.io/crates/v/namecheap-ddns.svg)](https://crates.io/crates/namecheap-ddns)
-[![下载量](https://img.shields.io/github/downloads/nickjer/namecheap-ddns/total.svg)](https://github.com/nickjer/namecheap-ddns/releases)
-[![许可证](https://img.shields.io/github/license/nickjer/namecheap-ddns.svg)](https://github.com/nickjer/namecheap-ddns)
-[![持续集成状态](https://github.com/nickjer/namecheap-ddns/workflows/Continuous%20integration/badge.svg)](https://github.com/nickjer/namecheap-ddns/actions)
+[![最新版本](https://img.shields.io/crates/v/friday-ddns.svg)](https://crates.io/crates/friday-ddns)
+[![下载量](https://img.shields.io/github/downloads/arxxyr/friday-ddns/total.svg)](https://github.com/arxxyr/friday-ddns/releases)
+[![许可证](https://img.shields.io/github/license/arxxyr/friday-ddns.svg)](https://github.com/arxxyr/friday-ddns)
+[![持续集成状态](https://github.com/arxxyr/friday-ddns/workflows/Continuous%20integration/badge.svg)](https://github.com/arxxyr/friday-ddns/actions)
 
 [English Version](README_EN.md)
 
@@ -20,7 +20,7 @@
 另一种方法是使用[cargo]进行安装：
 
 ```shell
-cargo install namecheap-ddns
+cargo install friday-ddns
 ```
 
 ## 使用方法
@@ -30,7 +30,7 @@ cargo install namecheap-ddns
 ```shell
 更新Namecheap的A记录和动态DNS记录
 
-用法: namecheap-ddns [选项] --config <配置文件>
+用法: friday-ddns [选项] --config <配置文件>
 
 选项:
   -c, --config <配置文件>        YAML配置文件的路径 [环境变量: NAMECHEAP_DDNS_CONFIG=]
@@ -71,7 +71,7 @@ domains:
 更新配置文件中定义的所有域名和子域名：
 
 ```console
-$ namecheap-ddns -c config.yaml
+$ friday-ddns -c config.yaml
 www.example.com IP地址已更新为: 123.123.123.123
 test.example.com IP地址已更新为: 123.123.123.123
 home.another-example.com IP地址已更新为: 123.123.123.123
@@ -82,7 +82,7 @@ cloud.another-example.com IP地址已更新为: 123.123.123.123
 
 ```console
 $ export NAMECHEAP_DDNS_CONFIG=/path/to/config.yaml
-$ namecheap-ddns
+$ friday-ddns
 ```
 
 ## Linux - systemd
@@ -100,7 +100,7 @@ $ namecheap-ddns
 
    [Service]
    Type=simple
-   ExecStart=/path/to/namecheap-ddns -c /path/to/config.yaml
+   ExecStart=/path/to/friday-ddns -c /path/to/config.yaml
    User=<USER>
 
    [Install]
@@ -172,7 +172,7 @@ sudo ./install.sh
 
 ```bash
 # 替换your-username为你的GitHub用户名
-docker pull ghcr.io/your-username/namecheap-ddns:latest
+docker pull ghcr.io/your-username/friday-ddns:latest
 ```
 
 ### 使用Docker运行
@@ -193,7 +193,7 @@ domains:
 ```bash
 # 替换your-username为你的GitHub用户名
 docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml \
-  ghcr.io/your-username/namecheap-ddns:latest
+  ghcr.io/your-username/friday-ddns:latest
 ```
 
 ### 使用Docker Compose运行
@@ -210,14 +210,14 @@ docker-compose up -d
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/namecheap-ddns.git
-cd namecheap-ddns
+git clone https://github.com/yourusername/friday-ddns.git
+cd friday-ddns
 
 # 构建镜像
-docker build -t namecheap-ddns .
+docker build -t friday-ddns .
 
 # 运行容器
-docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml namecheap-ddns
+docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml friday-ddns
 ```
 
 ## 持续集成与自动构建
@@ -231,4 +231,4 @@ docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml namecheap-ddns
    - 支持多架构(amd64/arm64)镜像
 
 [cargo]: https://doc.rust-lang.org/cargo/
-[预编译的二进制文件]: https://github.com/nickjer/namecheap-ddns/releases
+[预编译的二进制文件]: https://github.com/arxxyr/friday-ddns/releases

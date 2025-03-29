@@ -62,7 +62,7 @@ jobs:
           target: ${{ matrix.target }}
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: namecheap-ddns
+          bin: friday-ddns
           target: ${{ matrix.target }}
           tar: all
           zip: all
