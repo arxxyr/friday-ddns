@@ -87,13 +87,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 创建并推送多架构清单
+      # 创建并推送多架构清单 - 简化为只推送到GitHub
       - name: 创建并推送多架构清单
         if: github.event_name != 'pull_request'
         run: |
-          # 重新登录以确保有权限推送清单
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          
           # 为每个标签创建多架构清单
           for tag in $(echo "${{ steps.meta.outputs.tags }}" | tr '\n' ' '); do
             echo "为标签 $tag 创建多架构清单"
