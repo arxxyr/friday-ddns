@@ -91,12 +91,18 @@ jobs:
       - name: 创建并推送多架构清单
         if: github.event_name != 'pull_request'
         run: |
-          # 为每个标签创建多架构清单
-          for tag in $(echo "${{ steps.meta.outputs.tags }}" | tr '\n' ' '); do
+          # 将标签处理为数组
+          readarray -t TAGS < <(echo "${{ steps.meta.outputs.tags }}")
+          
+          # 处理每个标签
+          for tag in "${TAGS[@]}"; do
+            # 跳过空行
+            [ -z "$tag" ] && continue
+            
             echo "为标签 $tag 创建多架构清单"
             
-            docker manifest create $tag \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64 \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+            docker manifest create "$tag" \
+              "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64" \
+              "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64"
             
-            docker manifest push $tag 
+            docker manifest push "$tag" 
