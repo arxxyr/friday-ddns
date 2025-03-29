@@ -1,26 +1,20 @@
-FROM rustlang/rust:nightly as builder
+FROM ekidd/rust-musl-builder:nightly as builder
 
-# 安装musl工具链和其他依赖
+# 创建一个非root用户，因为rust-musl-builder默认使用rust用户
+USER root
 RUN apt-get update && \
     apt-get install -y \
-    musl-tools \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+USER rust
 
-# 添加musl目标
-RUN rustup target add x86_64-unknown-linux-musl
+# 复制源代码
+WORKDIR /home/rust/src
+COPY --chown=rust:rust . .
 
-# 设置环境变量
-ENV PKG_CONFIG_ALLOW_CROSS=1
-ENV OPENSSL_STATIC=true
-ENV OPENSSL_DIR=/usr/include/openssl
-
-WORKDIR /app
-COPY . .
-
-# 静态编译
-RUN cargo build --release --target x86_64-unknown-linux-musl
+# 构建项目
+RUN cargo build --release
 
 FROM alpine:3.18
 
@@ -29,7 +23,7 @@ RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 # 复制静态编译的二进制文件
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
+COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/friday-ddns /usr/local/bin/friday-ddns
 
 # 创建配置目录
 RUN mkdir -p /etc/friday-ddns
