@@ -1,0 +1,18 @@
+# Namecheap DDNS 配置示例
+domains:
+  # 第一个域名配置
+  - domain: example.com
+    token: abcdef123456  # Namecheap动态DNS密码
+    subdomains:
+      - "@"  # 根域名
+      - "www"
+      - "test"
+    # ip: 198.51.100.1  # 可选，如果不提供则使用发出请求的IP地址
+
+  # 第二个域名配置
+  - domain: another-example.com
+    token: xyz789abc
+    subdomains:
+      - "home"
+      - "cloud"
+    # ip: 203.0.113.10  # 可选 

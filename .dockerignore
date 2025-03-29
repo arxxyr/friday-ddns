@@ -1,0 +1,10 @@
+/target
+/.git
+/.github
+/config.yaml
+/.gitignore
+/README.md
+/docker-compose.yml
+/install.sh
+/friday-ddns.service
+/friday-ddns.timer 

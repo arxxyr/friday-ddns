@@ -1,0 +1,13 @@
+[Unit]
+Description=Namecheap动态DNS更新服务
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/namecheap-ddns -c /etc/friday-ddns/config.yaml
+User=nobody
+Group=nogroup
+
+[Install]
+WantedBy=multi-user.target 

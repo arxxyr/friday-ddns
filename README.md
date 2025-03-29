@@ -28,104 +28,99 @@ Check the help (`--help`) for details on using this tool:
 ```shell
 Updates the A + Dynamic DNS records for Namecheap
 
-Usage: namecheap-ddns [OPTIONS] --domain <DOMAIN> --subdomain <SUBDOMAIN> --token <TOKEN>
+Usage: namecheap-ddns [OPTIONS] --config <CONFIG>
 
 Options:
-  -d, --domain <DOMAIN>        The domain with subdomains [env: NAMECHEAP_DDNS_DOMAIN=]
-  -s, --subdomain <SUBDOMAIN>  The subdomain to update [env: NAMECHEAP_DDNS_SUBDOMAIN=]
-  -i, --ip <IP>                The ip address to set on the subdomains (if
-                               blank the ip used to make this request will be
-                               used) [env: NAMECHEAP_DDNS_IP=]
-  -t, --token <TOKEN>          The secret token [env: NAMECHEAP_DDNS_TOKEN=]
+  -c, --config <CONFIG>        Path to the YAML configuration file [env: NAMECHEAP_DDNS_CONFIG=]
   -h, --help                   Print help
   -V, --version                Print version
 ```
 
+### YAML Configuration File
+
+The program now uses a YAML configuration file to support multiple domains and passwords. Here's an example configuration (`config.yaml`):
+
+```yaml
+domains:
+  # First domain configuration
+  - domain: example.com
+    token: abcdef123456  # Namecheap Dynamic DNS Password
+    subdomains:
+      - "@"  # Root domain
+      - "www"
+      - "test"
+    # ip: 198.51.100.1  # Optional, if not provided uses the IP of the request
+
+  # Second domain configuration
+  - domain: another-example.com
+    token: xyz789abc
+    subdomains:
+      - "home"
+      - "cloud"
+    # ip: 203.0.113.10  # Optional
+```
+
 You will need to specify Namecheap's Dynamic DNS Password provided to you in
-their Advanced DNS control panel as the environment variable
-`NAMECHEAP_DDNS_TOKEN`.
+their Advanced DNS control panel as the `token` in your configuration file.
 
 > *Tip:* This is not your Namecheap login password.
 
 ### Examples
 
-I want to update the host `host1.example.com` with my current public facing ip
-address:
+Update all domains and subdomains defined in your configuration file:
 
 ```console
-$ NAMECHEAP_DDNS_TOKEN=... namecheap-ddns -d example.com -s host1
-host1.example.com IP address updated to: 123.123.123.123
+$ namecheap-ddns -c config.yaml
+www.example.com IP地址已更新为: 123.123.123.123
+test.example.com IP地址已更新为: 123.123.123.123
+home.another-example.com IP地址已更新为: 123.123.123.123
+cloud.another-example.com IP地址已更新为: 123.123.123.123
 ```
 
-I want to update multiple subdomains (`host1`, `host2`, and `host3`) with a
-given ip address:
+You can also use an environment variable to specify the configuration file:
 
 ```console
-$ NAMECHEAP_DDNS_TOKEN=... namecheap-ddns \
->     -d example.com \
->     -s host1 -s host2 -s host3
->     -i 123.123.123.123
-host1.example.com IP address updated to: 123.123.123.123
-host2.example.com IP address updated to: 123.123.123.123
-host3.example.com IP address updated to: 123.123.123.123
-```
-
-I want to use an environment variable file:
-
-```console
-$ cat .env
-export NAMECHEAP_DDNS_TOKEN=...
-export NAMECHEAP_DDNS_DOMAIN=example.com
-export NAMECHEAP_DDNS_SUBDOMAIN=host1,host2
-export NAMECHEAP_DDNS_IP=321.321.321.321
-$ source .env
+$ export NAMECHEAP_DDNS_CONFIG=/path/to/config.yaml
 $ namecheap-ddns
-host1.example.com IP address updated to: 321.321.321.321
 ```
 
 ## Linux - systemd
 
-If you want to set this up as a service you will need to create a service file
-and corresponding timer.
+如果你想将其设置为服务，你需要创建一个服务文件和相应的定时器。
 
-1. Create the service itself that updates your subdomains:
+1. 创建更新子域名的服务：
 
    ```desktop
    # /etc/systemd/system/ddns-update.service
 
    [Unit]
-   Description=Update DDNS records for Namecheap
+   Description=更新Namecheap的DDNS记录
    After=network-online.target
 
    [Service]
    Type=simple
-   Environment=NAMECHEAP_DDNS_TOKEN=<TOKEN>
-   Environment=NAMECHEAP_DDNS_DOMAIN=<DOMAIN>
-   Environment=NAMECHEAP_DDNS_SUBDOMAIN=<SUBDOMAIN>
-   ExecStart=/path/to/namecheap-ddns
+   ExecStart=/path/to/namecheap-ddns -c /path/to/config.yaml
    User=<USER>
 
    [Install]
    WantedBy=default.target
    ```
 
-   Be sure to fill in the correct path to your binary as well as the
-   environment variables.
+   确保填写正确的二进制文件路径和配置文件路径。
 
-2. Note that the super secret token is in this file, so we should set
-   restrictive permissions:
+2. 为了安全起见，我们应该为配置文件设置严格的权限：
 
    ```shell
-   sudo chmod 600 /etc/systemd/system/ddns-update.service
+   sudo chmod 600 /path/to/config.yaml
    ```
 
-3. Create the timer that runs this service:
+3. 创建运行此服务的定时器：
 
    ```desktop
    # /etc/systemd/system/ddns-update.timer
 
    [Unit]
-   Description=Run DDNS update every 15 minutes
+   Description=每15分钟运行DDNS更新
    Requires=ddns-update.service
 
    [Timer]
@@ -137,18 +132,100 @@ and corresponding timer.
    WantedBy=timers.target
    ```
 
-4. Now we reload the daemon with the new services and start them:
+4. 现在我们重新加载守护进程并启动服务：
 
    ```shell
    sudo systemctl daemon-reload
    sudo systemctl start ddns-update.service ddns-update.timer
    ```
 
-You can view the logs from the service with the following command:
+你可以使用以下命令查看服务日志：
 
 ```shell
 sudo journalctl -u ddns-update.service
 ```
+
+## 自动安装
+
+为了简化安装过程，可以使用提供的安装脚本进行自动安装：
+
+```bash
+# 确保脚本具有执行权限
+chmod +x install.sh
+
+# 以root权限运行安装脚本
+sudo ./install.sh
+```
+
+安装脚本将自动完成以下操作：
+1. 编译并安装程序到/usr/local/bin
+2. 创建配置目录和示例配置文件
+3. 安装systemd服务和定时器
+4. 启用并启动服务
+
+**注意：** 安装后请确保编辑配置文件`/etc/friday-ddns/config.yaml`，填入正确的域名和密钥信息。
+
+## Docker 使用方法
+
+### 从GitHub容器仓库拉取镜像
+
+```bash
+docker pull ghcr.io/yourusername/namecheap-ddns:latest
+```
+
+### 使用Docker运行
+
+1. 创建配置文件`config.yaml`：
+
+```yaml
+domains:
+  - domain: example.com
+    token: your_namecheap_ddns_password
+    subdomains:
+      - "@"
+      - "www"
+```
+
+2. 运行Docker容器：
+
+```bash
+docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml \
+  ghcr.io/yourusername/namecheap-ddns:latest
+```
+
+### 使用Docker Compose运行
+
+1. 创建`docker-compose.yml`文件和`config.yaml`配置文件
+
+2. 启动服务：
+
+```bash
+docker-compose up -d
+```
+
+### 自行构建Docker镜像
+
+```bash
+# 克隆仓库
+git clone https://github.com/yourusername/namecheap-ddns.git
+cd namecheap-ddns
+
+# 构建镜像
+docker build -t namecheap-ddns .
+
+# 运行容器
+docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml namecheap-ddns
+```
+
+## 持续集成与自动构建
+
+本项目使用GitHub Actions进行持续集成和自动构建：
+
+1. **二进制发布**：当推送标签(如v1.0.0)时，会自动构建多平台二进制文件并创建GitHub发布
+2. **Docker镜像构建**：
+   - 推送到main分支时构建并推送最新的Docker镜像
+   - 标签发布时构建并推送对应版本的Docker镜像
+   - 支持多架构(amd64/arm64)镜像
 
 [cargo]: https://doc.rust-lang.org/cargo/
 [pre-compiled binaries]: https://github.com/nickjer/namecheap-ddns/releases

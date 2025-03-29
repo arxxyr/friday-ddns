@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  namecheap-ddns:
+    image: ghcr.io/yourusername/namecheap-ddns:latest
+    container_name: namecheap-ddns
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/etc/friday-ddns/config.yaml:ro
+    # 设置定时任务，避免一次性运行后退出
+    entrypoint: 
+      - "sh"
+      - "-c"
+      - "while true; do namecheap-ddns -c /etc/friday-ddns/config.yaml && sleep 900; done" 

@@ -1,0 +1,12 @@
+[Unit]
+Description=定期运行Namecheap DDNS更新
+Requires=friday-ddns.service
+
+[Timer]
+Unit=friday-ddns.service
+OnBootSec=1min
+OnUnitInactiveSec=15min
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target 

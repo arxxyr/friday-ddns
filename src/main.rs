@@ -2,12 +2,15 @@ extern crate clap;
 extern crate minreq;
 extern crate quick_xml;
 extern crate url;
+extern crate serde_yaml;
 
 use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use quick_xml::de::from_str;
 use serde::Deserialize;
 use url::Url;
+use std::fs;
+use std::path::PathBuf;
 
 const API_URL: &str = "https://dynamicdns.park-your-domain.com/update";
 
@@ -39,31 +42,25 @@ impl Response {
     }
 }
 
+#[derive(Deserialize, Debug)]
+struct DomainConfig {
+    domain: String,
+    token: String,
+    subdomains: Vec<String>,
+    ip: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct Config {
+    domains: Vec<DomainConfig>,
+}
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
-    /// The domain with subdomains
-    #[clap(short, long, env = "NAMECHEAP_DDNS_DOMAIN")]
-    domain: String,
-
-    /// The subdomain to update
-    #[clap(
-        short,
-        long,
-        env = "NAMECHEAP_DDNS_SUBDOMAIN",
-        required = true,
-        use_value_delimiter = true
-    )]
-    subdomain: Vec<String>,
-
-    /// The ip address to set on the subdomains (if blank the ip used to make
-    /// this request will be used)
-    #[clap(short, long, env = "NAMECHEAP_DDNS_IP")]
-    ip: Option<String>,
-
-    /// The secret token
-    #[clap(short, long, env = "NAMECHEAP_DDNS_TOKEN")]
-    token: String,
+    /// Path to the YAML configuration file
+    #[clap(short, long, env = "NAMECHEAP_DDNS_CONFIG")]
+    config: PathBuf,
 }
 
 fn update(domain: &str, subdomain: &str, token: &str, ip: Option<&str>) -> Result<()> {
@@ -85,15 +82,15 @@ fn update(domain: &str, subdomain: &str, token: &str, ip: Option<&str>) -> Resul
     if body.success() {
         match body.ip {
             Some(ip) => {
-                println!("{subdomain}.{domain} IP address updated to: {ip}");
+                println!("{subdomain}.{domain} IP地址已更新为: {ip}");
                 Ok(())
             }
-            None => Err(anyhow!("Missing IP address in response")),
+            None => Err(anyhow!("响应中缺少IP地址")),
         }
     } else {
         match body.error() {
             Some(error) => Err(anyhow!("{error}")),
-            None => Err(anyhow!("Failed with unknown error")),
+            None => Err(anyhow!("未知错误导致失败")),
         }
     }
 }
@@ -101,10 +98,23 @@ fn update(domain: &str, subdomain: &str, token: &str, ip: Option<&str>) -> Resul
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let domain = cli.domain.clone();
-    for subdomain in cli.subdomain {
-        update(&domain, &subdomain, &cli.token, cli.ip.as_deref())
-            .with_context(|| format!("Failed to update {subdomain}.{domain}"))?;
+    // 读取YAML配置文件
+    let config_content = fs::read_to_string(&cli.config)
+        .with_context(|| format!("无法读取配置文件 {:?}", cli.config))?;
+    
+    let config: Config = serde_yaml::from_str(&config_content)
+        .with_context(|| "解析YAML配置文件失败")?;
+
+    // 处理每个域名配置
+    for domain_config in config.domains {
+        let domain = domain_config.domain.clone();
+        let token = domain_config.token.clone();
+        let ip = domain_config.ip.as_deref();
+
+        for subdomain in domain_config.subdomains {
+            update(&domain, &subdomain, &token, ip)
+                .with_context(|| format!("更新 {subdomain}.{domain} 失败"))?;
+        }
     }
 
     Ok(())
