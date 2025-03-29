@@ -170,7 +170,8 @@ sudo ./install.sh
 ### 从GitHub容器仓库拉取镜像
 
 ```bash
-docker pull ghcr.io/yourusername/namecheap-ddns:latest
+# 替换your-username为你的GitHub用户名
+docker pull ghcr.io/your-username/namecheap-ddns:latest
 ```
 
 ### 使用Docker运行
@@ -189,8 +190,9 @@ domains:
 2. 运行Docker容器：
 
 ```bash
+# 替换your-username为你的GitHub用户名
 docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml \
-  ghcr.io/yourusername/namecheap-ddns:latest
+  ghcr.io/your-username/namecheap-ddns:latest
 ```
 
 ### 使用Docker Compose运行
@@ -223,7 +225,7 @@ docker run -v $(pwd)/config.yaml:/etc/friday-ddns/config.yaml namecheap-ddns
 
 1. **二进制发布**：当推送标签(如v1.0.0)时，会自动构建多平台二进制文件并创建GitHub发布
 2. **Docker镜像构建**：
-   - 推送到main分支时构建并推送最新的Docker镜像
+   - 推送到master分支时构建并推送最新的Docker镜像
    - 标签发布时构建并推送对应版本的Docker镜像
    - 支持多架构(amd64/arm64)镜像
 

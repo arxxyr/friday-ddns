@@ -1,8 +1,20 @@
 FROM rust:1.76-slim as builder
 
+# 安装构建依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    build-essential \
+    gcc \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . .
-RUN cargo build --release
+
+# 提供详细输出便于调试
+RUN cargo build --release --verbose || (cat /app/target/release/build/*/*/output 2>/dev/null || true && false)
 
 FROM debian:bullseye-slim
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
